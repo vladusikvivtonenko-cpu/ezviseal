@@ -8,7 +8,6 @@ import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemCooldownManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.client.util.math.MatrixStack;
@@ -234,7 +233,7 @@ public final class Hud {
     }
 
     private static int[] cooldowns(DrawContext c, MinecraftClient mc, int x, int y, float td, boolean preview) {
-        ItemCooldownManager cm = mc.player.getItemCooldownManager();
+        var cm = mc.player.getItemCooldownManager();
         PlayerInventory inv = mc.player.getInventory();
         Set<Item> seen = new HashSet<>();
         // items that have their own movable timer are not repeated here
@@ -280,7 +279,7 @@ public final class Hud {
         Theme t = Theme.cur();
         Item item = CdItems.item(m.get("item").i());
         ItemStack st = findStack(mc, item);
-        ItemCooldownManager cm = mc.player.getItemCooldownManager();
+        var cm = mc.player.getItemCooldownManager();
         boolean cd = cm.isCoolingDown(st);
         float p = cd ? cm.getCooldownProgress(st, td) : 0f;
         float sec = secLeft(mc, item, cd, p, td);
