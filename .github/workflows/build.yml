@@ -15,8 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # If the files were uploaded to GitHub without their folders (all .java in the repo root),
-      # put them back where Gradle expects them.
       - name: Restore folder structure if needed
         run: |
           if [ ! -d src/main/java ]; then
@@ -59,6 +57,14 @@ jobs:
       - name: Show errors
         if: failure()
         run: |
-          echo "=== Java errors ==="
-          grep -n "error:" build.log | head -60 || true
-          echo "=== What went
+          grep -n -E 'error:' build.log | head -80 || true
+          grep -n -A 20 -E 'What went wrong' build.log | head -60 || true
+
+      - name: Upload mod jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: ezvisuals-jar
+          path: |
+            build/libs/ezvisuals-*.jar
+            !build/libs/*-sources.jar
+          if-no-files-found: error
