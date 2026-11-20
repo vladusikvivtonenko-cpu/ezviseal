@@ -3,13 +3,12 @@ package com.ezvisuals;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.CloudRenderMode;
 import net.minecraft.client.option.GraphicsMode;
-import net.minecraft.client.option.ParticlesMode;
 
 /** Applies / restores video options for the Performance Mode module. */
 public final class Perf {
     private Perf() {}
     private static boolean applied;
-    private static ParticlesMode pm;
+    private static Runnable restoreParticles;
     private static GraphicsMode gm;
     private static CloudRenderMode cm;
     private static boolean shadows;
@@ -28,7 +27,9 @@ public final class Perf {
 
     private static void apply(MinecraftClient mc) {
         Module m = Modules.PERF;
-        pm = mc.options.getParticles().getValue();
+        var particles = mc.options.getParticles();
+        var oldParticles = particles.getValue();
+        restoreParticles = () -> particles.setValue(oldParticles);
         gm = mc.options.getGraphicsMode().getValue();
         cm = mc.options.getCloudRenderMode().getValue();
         shadows = mc.options.getEntityShadows().getValue();
@@ -36,8 +37,8 @@ public final class Perf {
         blend = mc.options.getBiomeBlendRadius().getValue();
         applied = true;
 
-        ParticlesMode[] pms = ParticlesMode.values();
-        mc.options.getParticles().setValue(pms[Math.max(0, Math.min(pms.length - 1, m.get("particles").i()))]);
+        var pms = oldParticles.getDeclaringClass().getEnumConstants();
+        particles.setValue(pms[Math.max(0, Math.min(pms.length - 1, m.get("particles").i()))]);
         if (m.get("fast").b()) mc.options.getGraphicsMode().setValue(GraphicsMode.FAST);
         if (m.get("clouds").b()) mc.options.getCloudRenderMode().setValue(CloudRenderMode.OFF);
         if (m.get("shadows").b()) mc.options.getEntityShadows().setValue(false);
@@ -46,7 +47,7 @@ public final class Perf {
     }
 
     private static void restore(MinecraftClient mc) {
-        mc.options.getParticles().setValue(pm);
+        if (restoreParticles != null) restoreParticles.run();
         mc.options.getGraphicsMode().setValue(gm);
         mc.options.getCloudRenderMode().setValue(cm);
         mc.options.getEntityShadows().setValue(shadows);
